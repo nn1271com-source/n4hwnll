@@ -2,15 +2,14 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>n4hwnl</title>
-
+<title>System Security Check</title>
 <style>
 body{
     margin:0;
-    overflow:hidden;
     background:black;
-    font-family: monospace;
     color:#00ff00;
+    font-family:monospace;
+    overflow:hidden;
     text-align:center;
 }
 
@@ -21,141 +20,255 @@ canvas{
     z-index:-1;
 }
 
-.small{
-    font-size:14px;
-    margin-top:20px;
-    opacity:0.7;
+#terminal{
+    margin-top:12%;
+    font-size:20px;
 }
 
-.big{
-    font-size:40px;
-    margin-top:20%;
-    animation: blink 1s infinite;
+#progress{
+    width:60%;
+    height:20px;
+    border:1px solid lime;
+    margin:20px auto;
 }
 
-.emoji{
-    font-size:120px;
-    margin-top:20px;
-    display:none;
+#bar{
+    width:0%;
+    height:100%;
+    background:lime;
 }
 
-input{
-    margin-top:20px;
-    padding:10px;
-    font-size:16px;
-    background:black;
-    border:2px solid #00ff00;
-    color:#00ff00;
-    outline:none;
+.glitch{
+    font-size:55px;
+    color:red;
+    animation: glitch 0.2s infinite;
 }
 
-@keyframes blink{
-    0%{opacity:1;}
-    50%{opacity:0;}
-    100%{opacity:1;}
+@keyframes glitch{
+0%{transform:translate(3px,3px);}
+25%{transform:translate(-3px,0);}
+50%{transform:translate(3px,-3px);}
+75%{transform:translate(-3px,3px);}
+100%{transform:translate(0,0);}
+}
+
+#countdown{
+    font-size:60px;
+    color:red;
 }
 </style>
 </head>
-
-<body>
+<body onclick="startPrank()">
 
 <canvas id="matrix"></canvas>
 
-<div class="small">Created by n4hwnl</div>
-
-<div class="big" id="mainText">ACCESS TERMINAL</div>
-
-<div class="emoji" id="emoji">🖕🤪</div>
-
-<input type="password" placeholder="Enter your password" id="pw">
+<div id="terminal">
+<div id="text">Klik layar untuk mulai...</div>
+<div id="progress"><div id="bar"></div></div>
+<div id="countdown"></div>
+</div>
 
 <script>
-// MATRIX EFFECT
-var canvas = document.getElementById("matrix");
-var ctx = canvas.getContext("2d");
+let started = false;
+let audioCtx;
 
+function beep(freq, duration){
+    let oscillator = audioCtx.createOscillator();
+    let gainNode = audioCtx.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.frequency.value = freq;
+    oscillator.type = "square";
+    oscillator.start();
+    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+    oscillator.stop(audioCtx.currentTime + duration/1000);
+}
+
+function vibrate(){
+    if(navigator.vibrate){
+        navigator.vibrate(300);
+    }
+}
+
+function startPrank(){
+if(started) return;
+started = true;
+
+audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+if(document.documentElement.requestFullscreen){
+document.documentElement.requestFullscreen();
+}
+
+startMatrix();
+startDrama();
+}
+
+function startMatrix(){
+const canvas = document.getElementById("matrix");
+const ctx = canvas.getContext("2d");
 canvas.height = window.innerHeight;
 canvas.width = window.innerWidth;
 
-var letters = "01ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+let letters = "01";
 letters = letters.split("");
 
-var fontSize = 14;
-var columns = canvas.width/fontSize;
-var drops = [];
+let fontSize = 14;
+let columns = canvas.width/fontSize;
+let drops = [];
 
-for(var x = 0; x < columns; x++)
-    drops[x] = 1;
+for(let x=0; x<columns; x++) drops[x]=1;
 
 function draw(){
-    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+ctx.fillStyle="rgba(0,0,0,0.05)";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+ctx.fillStyle="#0F0";
+ctx.font=fontSize+"px monospace";
 
-    ctx.fillStyle = "#0F0";
-    ctx.font = fontSize + "px monospace";
-
-    for(var i = 0; i < drops.length; i++){
-        var text = letters[Math.floor(Math.random()*letters.length)];
-        ctx.fillText(text, i*fontSize, drops[i]*fontSize);
-
-        if(drops[i]*fontSize > canvas.height && Math.random() > 0.975)
-            drops[i] = 0;
-
-        drops[i]++;
-    }
+for(let i=0;i<drops.length;i++){
+let text=letters[Math.floor(Math.random()*letters.length)];
+ctx.fillText(text,i*fontSize,drops[i]*fontSize);
+if(drops[i]*fontSize>canvas.height && Math.random()>0.975)
+drops[i]=0;
+drops[i]++;
 }
-setInterval(draw, 33);
-
-// SOUND FUNCTION
-function beep(freq, duration){
-    let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    let osc = audioCtx.createOscillator();
-    osc.type = "square";
-    osc.frequency.value = freq;
-    osc.connect(audioCtx.destination);
-    osc.start();
-    setTimeout(()=>{
-        osc.stop();
-        audioCtx.close();
-    }, duration);
+}
+setInterval(draw,33);
 }
 
-// PASSWORD ENTER EFFECT
-document.getElementById("pw").addEventListener("keydown", function(e){
-    if(e.key === "Enter"){
+function startDrama(){
 
-        let count = 5;
-        let mainText = document.getElementById("mainText");
-        let emoji = document.getElementById("emoji");
+let text = document.getElementById("text");
+let bar = document.getElementById("bar");
+let countdown = document.getElementById("countdown");
 
-        this.style.display = "none";
-        mainText.innerText = "Please Wait " + count;
+let messages = [
+"Initializing deep scan...",
+"Detecting device vulnerabilities...",
+"Accessing hidden files...",
+"Analyzing private storage...",
+"Extracting encrypted data...",
+"Uploading to secure node...",
+"System override in progress...",
+"Lock protocol activated..."
+];
 
-        let timer = setInterval(function(){
-            beep(600,150); // sound dep tiap detik
+let i = 0;
+let progress = 0;
 
-            count--;
-            mainText.innerText = "Please Wait " + count;
+let msgInterval = setInterval(()=>{
+if(i < messages.length){
+text.innerText = messages[i];
+beep(400,150);
+vibrate();
+i++;
+}
+},2500);
 
-            if(count <= 0){
-                clearInterval(timer);
+let loadInterval = setInterval(()=>{
+progress += 1;
+bar.style.width = progress + "%";
 
-                mainText.style.display = "none";
-                emoji.style.display = "block";
+if(progress >= 100){
+clearInterval(loadInterval);
+clearInterval(msgInterval);
+stageTwo();
+}
+},120);
 
-                beep(200,500); // sound lebih berat pas emoji muncul
+function stageTwo(){
+text.innerText = "FINALIZING SYSTEM LOCK...";
+beep(200,500);
+vibrate();
 
-                setTimeout(function(){
-                    emoji.style.display = "none";
-                    mainText.style.display = "block";
-                    mainText.innerText = "WELCOME";
-                },2000);
-            }
+setTimeout(()=>{
+countdownStage1();
+},2000);
+}
 
-        },1000);
-    }
-});
+function countdownStage1(){
+let time = 5;
+countdown.innerText = time;
+
+let cd = setInterval(()=>{
+time--;
+countdown.innerText = time;
+beep(600,100);
+vibrate();
+
+if(time <= 0){
+clearInterval(cd);
+countdown.innerText = "ðŸ–•ðŸ¤ª";
+beep(1000,400);
+vibrate();
+
+setTimeout(()=>{
+countdownStage2();
+},2000);
+}
+},1000);
+}
+
+function countdownStage2(){
+let time = 5;
+countdown.innerText = time;
+
+let cd = setInterval(()=>{
+time--;
+countdown.innerText = time;
+beep(700,100);
+vibrate();
+
+if(time <= 0){
+clearInterval(cd);
+showCommands();
+}
+},1000);
+}
+
+function showCommands(){
+
+let commands = [
+"1ï¸âƒ£ Letakkan HP di meja sekarang!",
+"2ï¸âƒ£ Jangan sentuh layar selama 5 detik!",
+"3ï¸âƒ£ Tatap layar dan jangan berkedip!",
+"4ï¸âƒ£ Ambil screenshot sekarang!"
+];
+
+let i = 0;
+let text = document.getElementById("text");
+let countdown = document.getElementById("countdown");
+
+countdown.innerText = "";
+
+let cmdInterval = setInterval(()=>{
+if(i < commands.length){
+text.innerText = commands[i];
+beep(500,200);
+vibrate();
+i++;
+}else{
+clearInterval(cmdInterval);
+setTimeout(showFinal,3000);
+}
+},3000);
+}
+
+function showFinal(){
+document.getElementById("terminal").innerHTML =
+'<div class="glitch">ðŸ˜‚ SANTAI BROOO!</div><br><div style="color:white;font-size:35px;">INI CUMA PRANK ðŸ˜œ</div>';
+beep(1200,600);
+vibrate();
+}
+} 
 </script>
+<body>
+
+<!-- isi website kamu -->
+
+<audio id="laugh">
+    <source src="sound/acumalaka.mp4" type="video/mp4">
+</audio>
 
 </body>
 </html>
